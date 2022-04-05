@@ -2,11 +2,9 @@ import './App.css';
 import React from "react";
 
 function App() {
+  const [isFetching, setIsFecting] = React.useState(false)
   const [data, setData] = React.useState([]);
-  const [answerSelected, setAnswerSelected] = React.useState(false)
-  const [selectedAnswer, setSelectedAnswer] = React.useState(null)
   const [score, setScore] = React.useState(0)
-
 
   React.useEffect(() => {
     async function fetchMyAPI() {
@@ -22,7 +20,7 @@ function App() {
           options: options.sort(() => Math.random() - .5)
         }
       }))
-
+      setIsFecting(true)
     }
     fetchMyAPI()
 
@@ -36,46 +34,39 @@ function App() {
 
 
   const handleListItemClick = (event) => {
-    console.log(data)
-    setAnswerSelected(true)
-    setSelectedAnswer(event.target.innerHTML)
-    for (let i = 0; i < data.length; i++) {
-      if (event.target.innerHTML === data[i].answer) {
-        setScore(score + 1)
-      }
-    }
-  }
 
-  const getClass = (option) => {
-    if (!answerSelected) {
-      return ``;
+    if (event.target.innerHTML === data[event.target.dataset.index].answer) {
+      setScore(score + 1)
+      event.target.classList = `correct`;
+      event.target.disabled = true;
     }
-    if (option === data.answer) {
-      return `correct`
-    }
-    if (option === selectedAnswer) {
-      return `selected`
+    if (event.target.innerHTML !== data[event.target.dataset.index].answer) {
+      event.target.classList = `selected`;
+      alert('Try Again')
     }
   }
 
   return (
-    <div className="App">
 
+    <div className="App">
+      {!isFetching ? <h1>Loading</h1> : <h1>Quiz App</h1>}
       {data.map((question) => {
 
         return (
-          <div key={question.id}>
-            <h3 >{question.id}. {question.questions}</h3>
+          <div className="div-question" key={question.id}>
+            <h3 >{question.id + 1}. {question.questions}</h3>
             {question.options.map((option, index) => {
-              return <button onClick={handleListItemClick} className={getClass(option)} key={index}>{option}</button>
+              return <button className={question.id} disabled={false} onClick={handleListItemClick} data-index={question.id} key={index}>{option}</button>
             })}
           </div>
         )
       })}
 
-      <div>
-        Score: {score} / {data.length}
-      </div>
+      {!isFetching ? null :
+        <div className="div-score">
+          Score: {score} / {data.length}
+        </div>}
+
     </div>
   );
 }
